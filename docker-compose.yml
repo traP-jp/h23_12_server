@@ -1,0 +1,29 @@
+version: "3"
+services:
+  app:
+    depends_on:
+      - db
+    links:
+      - db
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    tty: true
+    env_file:
+      - .env
+
+  db:
+    container_name: dockerDB
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MARIADB_USER: hackathon_23winter_12
+      MARIADB_PASSWORD: password
+      MARIADB_DATABASE: hackathon_23winter_12
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql:/mysql
