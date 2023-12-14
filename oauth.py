@@ -40,14 +40,9 @@ class TokenResponse(BaseModel):
     scope: str
     id_token: str
 
-# The client must configure the authentication and authorization parameters
-# in accordance with the API server security policy.
-# Examples for each auth method are provided below, use the example that
-# satisfies your auth use case.
-
-# Configure OAuth2 access token for authorization: OAuth2
+# traq apiを叩くための事前設定
 configuration = traq.Configuration(
-    host = "https://q.trap.jp/api/v3"
+    host = traq_base_path
 )
 
 @router.get("/callback", dependencies=[Depends(cookie)])
