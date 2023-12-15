@@ -4,3 +4,4 @@ mariadb==1.1.8
 wheel==0.42.0
 uvicorn==0.24.0.post1
 traq==3.9.1.post0
+requests==2.31.0
