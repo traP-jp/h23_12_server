@@ -37,10 +37,6 @@ def return_recipe(index):
         cur.close()
 
 
-def generate_recipe():
-    pass
-
-
 def add_recipe(recipe_info):
     """
     Add the given recipe_info to the DB table.
