@@ -50,6 +50,7 @@ def add_recipe(recipe_info):
     -------
 
     """
+    # ToDo: you have to add image data!
     query = "INSERT INTO recipes (name, comment, ingredient, seasoning, instruction) VALUES (?, ?, ?, ?, ?)"
 
     recipe_info['comment'] = ''.join(recipe_info['comment'])
@@ -94,7 +95,7 @@ def create_table(table_name):
         ingredient TEXT,
         seasoning TEXT,
         instruction TEXT,
-        picture BLOB
+        image BLOB
     );
     """
 
