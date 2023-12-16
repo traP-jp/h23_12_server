@@ -15,7 +15,6 @@ try:
         host=host,
         port=3306,
         database=dbname
-
     )
 except mariadb.Error as e:
     print(f"Error connecting to MariaDB Platform: {e}")

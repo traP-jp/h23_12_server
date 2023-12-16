@@ -1,0 +1,1 @@
+traq_base_path = "https://q.trap.jp/api/v3"

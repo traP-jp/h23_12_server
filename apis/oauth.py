@@ -3,12 +3,12 @@ from typing import Optional
 from pydantic import BaseModel
 from uuid import uuid4, UUID
 from fastapi import APIRouter, Response, Depends, HTTPException
-from utils import cookie, backend, SessionData, traq_base_path
+from conf.session_storage import cookie, backend, SessionData
+from conf.traq import traq_base_path
 import traq
 from traq.api import oauth2_api
 import requests
 from requests import Response as ReqsResponse
-import json
 
 
 
@@ -101,7 +101,6 @@ class GetMeResponseFromTraq(BaseModel):
     displayName: str
     iconFileId: str
     twitterId: str
-
 
 async def auth_user(session_id: UUID) -> GetMeResponseFromTraq:
     """

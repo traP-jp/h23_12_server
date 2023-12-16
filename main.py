@@ -1,7 +1,10 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import oauth
+import apis.oauth as oauth
 from pydantic import BaseModel
+from logging import getLogger
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+logger = getLogger("uvicorn.app")
 
 app = FastAPI()
 
@@ -21,14 +24,7 @@ class GetPingResponce(BaseModel):
     ping: str
 
 @app.get("/ping", response_model=GetPingResponce, operation_id="get_ping")
-def get_ping(iserror: int = None):
-    if iserror != None:
-        raise HTTPException(status_code=416, detail="I'm tea pod")
+def get_ping():
     return GetPingResponce(ping="pong")
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
 
 app.include_router(oauth.router, prefix="/oauth", tags=["oauth"])

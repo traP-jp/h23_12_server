@@ -2,13 +2,11 @@ from uuid import UUID
 from pydantic import BaseModel
 from fastapi_sessions.frontends.implementations import SessionCookie, CookieParameters
 from fastapi_sessions.backends.implementations import InMemoryBackend
+from fastapi_sessions.session_verifier import SessionVerifier
+from fastapi import HTTPException
 
-class SessionData(BaseModel):
-    access_token: str
-
+# cookieの設定
 cookie_params = CookieParameters(samesite="none")
-
-backend = InMemoryBackend[UUID, SessionData]()
 
 cookie = SessionCookie(
     cookie_name="session",
@@ -18,8 +16,11 @@ cookie = SessionCookie(
     cookie_params=cookie_params,
 )
 
-from fastapi_sessions.session_verifier import SessionVerifier
-from fastapi import HTTPException
+# セッション周り
+class SessionData(BaseModel):
+    access_token: str
+
+backend = InMemoryBackend[UUID, SessionData]()
 
 class BasicVerifier(SessionVerifier[UUID, SessionData]):
     def __init__(
@@ -62,5 +63,3 @@ session_verifier = BasicVerifier(
     backend=backend,
     auth_http_exception=HTTPException(status_code=403, detail="invalid session"),
 )
-
-traq_base_path = "https://q.trap.jp/api/v3"
