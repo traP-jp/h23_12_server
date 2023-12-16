@@ -19,11 +19,10 @@ services:
     image: mariadb:latest
     restart: always
     environment:
-      MARIADB_ROOT_PASSWORD: password
-#      MARIADB_HOSTNAME: dockerDB
-      MARIADB_USER: hackathon_23_winter_12
-      MARIADB_PASSWORD: password
-      MARIADB_DATABASE: hackathon_23_winter_12
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: hackathon_23_winter_12
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: hackathon_23_winter_12
     ports:
       - "3306:3306"
     volumes:

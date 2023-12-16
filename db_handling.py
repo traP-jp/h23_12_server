@@ -5,11 +5,44 @@ from fastapi import HTTPException
 dp_pool = None
 
 
+async def initialize_db(conn):
+    async with conn.cursor() as cursor:
+        # テーブルの作成
+        await cursor.execute("""
+            CREATE TABLE IF NOT EXISTS recipes (
+                recipe_id INT AUTO_INCREMENT PRIMARY KEY,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                name VARCHAR(255),
+                comment TEXT,
+                ingredient TEXT,
+                seasoning TEXT,
+                instruction TEXT,
+                image BLOB
+            )
+        """)
+
+        # デフォルトレシピの挿入 (例)
+        default_recipes = [
+            ("Recipe 1", "Comment 1", "Ingredients 1", "Seasoning 1", "Instruction 1", None),
+            ("Recipe 2", "Comment 2", "Ingredients 2", "Seasoning 2", "Instruction 2", None),
+            # 他のレシピを追加
+        ]
+
+        for recipe in default_recipes:
+            await cursor.execute("""
+                INSERT INTO recipes (name, comment, ingredient, seasoning, instruction, image)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, recipe)
+
+        await conn.commit()
+
+
 async def get_recipe(conn, recipe_id: int):
     """
     Returns recipe information for a given recipe_id
     """
-    query = "SELECT * FROM recipes WHERE id = %s"
+    query = "SELECT * FROM recipes WHERE recipe_id = %s"
 
     async with conn.cursor() as cursor:
         await cursor.execute(query, (recipe_id,))
@@ -44,7 +77,7 @@ async def add_recipe(conn, recipe_info: dict):
 
 
 async def get_all_recipes(conn):
-    query = "SELECT id, name, image FROM recipes"
+    query = "SELECT recipe_id, name, image FROM recipes"
 
     try:
         async with conn.cursor() as cursor:
