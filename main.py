@@ -3,6 +3,7 @@ import aiomysql
 import db_handling
 import os
 from typing import Generator
+import oauth
 
 app = FastAPI()
 
@@ -17,10 +18,10 @@ async def get_db() -> Generator:
 @app.on_event("startup")
 async def startup():
     db_handling.db_pool = await aiomysql.create_pool(
-        host=os.getenv("MARIADB_HOSTNAME"),
+        host=os.getenv("MARIADB_HOSTNAME", 'dockerDB'),
         port=3306,
         user=os.getenv("MARIADB_USER"),
-        password=os.getenv("MARIADB_PASSWORD"),
+        password=os.getenv("MARIADB_PASSWORD", 'password'),
         db=os.getenv("MARIADB_DATABASE")
     )
 
