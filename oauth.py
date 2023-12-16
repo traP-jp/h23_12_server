@@ -19,14 +19,12 @@ client_id = os.getenv("CLIENT_ID", "jD70ycOCGcUfdTSmU6ORuAjVmSUYsJ4kyNxG")
 class GetOAuthRedirectResponse(BaseModel):
     redirect_uri: str
 
-@router.get("/redirect-uri", responses={200: {"model": GetOAuthRedirectResponse}})
-async def get_oauth_redirect(response: Response, session_id: UUID = Depends(cookie)):
+@router.get("/redirect-uri", responses={200: {"model": GetOAuthRedirectResponse}}, operation_id="get_oauth_redirect_uri")
+async def get_oauth_redirect(response: Response):
     """
-    認証画面へリダイレクトするためのリダイレクト先のurlを返すAPI
-
+    認証画面へリダイレクトするためのリダイレクト先のurlを返すAPI．
     このAPIを叩くとセッションが作られる
     """
-
     # 毎回新しいセッションを生成する (どうなんだろう...)
     session_id = uuid4()
     data = SessionData(access_token="")
@@ -37,7 +35,6 @@ async def get_oauth_redirect(response: Response, session_id: UUID = Depends(cook
 
     # レスポンスボディ作成
     uri = f"{traq_base_path}/oauth2/authorize?response_type=code&client_id={client_id}"
-    
     return GetOAuthRedirectResponse(redirect_uri=uri)
 
 
@@ -57,36 +54,22 @@ class TokenResponse(BaseModel):
     scope: str
     id_token: Optional[str] = None
 
-class HTTPError(BaseModel):
-    detail: str
 
-    class Config:
-        schema_extra = {
-            "example": {"detail": "HTTPException raised."},
-        }
-
-@router.get("/callback", status_code=204, responses={204:{"model":None}, 400:{"model":HTTPError}, 403:{"model":HTTPError}, 500:{"model":HTTPError}})
+@router.get("/callback", status_code=204, responses={204:{"model":None}}, operation_id="get_oauth_callback")
 async def get_oauth_callback(code: str,response: Response , session_id: UUID = Depends(cookie)):
     """
     認証画面を通過して得たcodeを用いてアクセストークンを得る
-    
-    ### 正しくアクセストークンを得れたとき
-
-    204 NoContent
-
-    ### 得れなかったとき
-
-    403 invalid access token
-
-    500 アクセストークンを得るためにtraqのサーバーを叩いた際にエラーが出たとき
     """
-    # codeがない => 認証に失敗している
+    if session_id == None:
+        print("cannot get session_id from cookie")
+        raise HTTPException(status_code=400, detail="cookie is empty")
+
+    # codeがない => 多分traqユーザーではない
     if code == "":
         raise HTTPException(status_code=400, detail="code is empty")
     
     api_response = None
     with traq.ApiClient(configuration) as api_client:
-        # Create an instance of the API class
         api_instance = oauth2_api.Oauth2Api(api_client)
         # "authorization_code" で固定
         grant_type = "authorization_code"
@@ -107,8 +90,7 @@ async def get_oauth_callback(code: str,response: Response , session_id: UUID = D
 
         # クッキーにセッションIDを貼り付ける
         cookie.attach_to_response(response, session_id)
-    return Response(status_code=204)
-
+    return None
 
 class GetMeResponseFromTraq(BaseModel):
     """
@@ -128,7 +110,8 @@ async def auth_user(session_id: UUID) -> GetMeResponseFromTraq:
     # アクセストークンがセッションのデータに保持されているか確認するためにセッションデータを得る
     session_data = await backend.read(session_id=session_id)
     if not isinstance(session_data, SessionData):
-        raise HTTPException(status_code=500, detail="Intarnal Server Error")
+        print(f"{session_data} is not instance of SessionData")
+        raise HTTPException(status_code=401, detail="Your authentication is expierred or you have never been authenticated!")
     
     # 適切なアクセストークンがあるか確認する
     access_token = session_data.access_token
@@ -141,7 +124,11 @@ async def auth_user(session_id: UUID) -> GetMeResponseFromTraq:
     user: GetMeResponseFromTraq = response.json()
     return user
 
-@router.get("/me", response_model=GetMeResponseFromTraq)
+@router.get("/me", response_model=GetMeResponseFromTraq, operation_id="get_oauth_me")
 async def get_oauth_me(session_id: UUID = Depends(cookie)):
+    """
+    認証が通らなかったら401が帰ってくる...はず
+    """
+    print("called")
     user = await auth_user(session_id)
     return user

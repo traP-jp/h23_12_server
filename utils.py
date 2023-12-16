@@ -6,14 +6,14 @@ from fastapi_sessions.backends.implementations import InMemoryBackend
 class SessionData(BaseModel):
     access_token: str
 
-cookie_params = CookieParameters()
+cookie_params = CookieParameters(samesite="none")
 
 backend = InMemoryBackend[UUID, SessionData]()
 
 cookie = SessionCookie(
     cookie_name="session",
     identifier="general_verifier",
-    auto_error=True,
+    auto_error=False,
     secret_key="secret",
     cookie_params=cookie_params,
 )
@@ -58,7 +58,7 @@ class BasicVerifier(SessionVerifier[UUID, SessionData]):
 
 session_verifier = BasicVerifier(
     identifier="general_verifier",
-    auto_error=True,
+    auto_error=False,
     backend=backend,
     auth_http_exception=HTTPException(status_code=403, detail="invalid session"),
 )

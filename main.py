@@ -1,11 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import oauth
+from pydantic import BaseModel
 
 app = FastAPI()
 
 origins = [
-    "*",
+    "http://localhost:4321",
 ]
 
 app.add_middleware(
@@ -16,9 +17,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def read_root():
-    return {"Hello": "world"}
+class GetPingResponce(BaseModel):
+    ping: str
+
+@app.get("/ping", response_model=GetPingResponce, operation_id="get_ping")
+def get_ping(iserror: int = None):
+    if iserror != None:
+        raise HTTPException(status_code=416, detail="I'm tea pod")
+    return GetPingResponce(ping="pong")
 
 
 @app.get("/items/{item_id}")
