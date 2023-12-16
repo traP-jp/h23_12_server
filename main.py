@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 import db_handling
 import os
 from typing import Generator
+from models import UserInput
+import gpt_executor
 import oauth
 
 
@@ -59,7 +61,15 @@ async def create_recipe(recipe_info: dict, conn=Depends(get_db)):
 
 @app.get("/recipes")
 async def read_all_recipes(conn=Depends(get_db)):
-    return await db_handling.get_all_recipes(conn)/1
+    return await db_handling.get_all_recipes(conn) / 1
+
+
+@app.post("/process-text")
+async def process_text(input_data: UserInput, conn=Depends(get_db)):
+    recipe_info = await gpt_executor.executor(input_data.text)
+
+    result = await db_handling.add_recipe(conn, recipe_info)
+    return result
 
 
 app.include_router(oauth.router, prefix="/oauth", tags=["oauth"])
