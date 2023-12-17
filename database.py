@@ -5,10 +5,10 @@ import os
 
 # Connect to MariaDB Platform
 try:
-    user = os.getenv("NS_MARIADB_USER", "root")
-    password = os.getenv("NS_MARIADB_PASSWORD", "password")
-    host = os.getenv("NS_MARIADB_HOSTNAME", "dockerDB")
-    dbname = os.getenv("NS_MARIADB_DATABASE", "hackathon_23winter_12")
+    user = os.getenv("NS_MARIADB_USER")
+    password = os.getenv("NS_MARIADB_PASSWORD")
+    host = os.getenv("NS_MARIADB_HOSTNAME")
+    dbname = os.getenv("NS_MARIADB_DATABASE")
     conn = mariadb.connect(
         user=user,
         password=password,
