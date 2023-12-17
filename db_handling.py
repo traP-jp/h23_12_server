@@ -1,6 +1,6 @@
-from typing import Generator
 import aiomysql
 from fastapi import HTTPException
+from pprint import pprint
 
 dp_pool = None
 
@@ -37,7 +37,6 @@ async def initialize_db(conn):
 
         await conn.commit()
 
-
 async def get_recipe(conn, recipe_id: int):
     """
     Returns recipe information for a given recipe_id
@@ -51,6 +50,7 @@ async def get_recipe(conn, recipe_id: int):
         recipe = {'recipe_id': recipe[0], 'created_at': recipe[1], 'updated_at': recipe[2], 'name': recipe[3], 'comment': recipe[4], 'ingredient': recipe[5], 'seasoning': recipe[6], 'instruction': recipe[7], 'image': recipe[8]}
 
         if recipe:
+            pprint(recipe)
             return recipe
         else:
             raise HTTPException(status_code=404, detail="No recipe found with the specified ID.")
