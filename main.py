@@ -1,4 +1,5 @@
 import apis.oauth as oauth
+import apis.dish as dish
 from pydantic import BaseModel
 from logging import getLogger
 from fastapi import FastAPI
@@ -28,3 +29,4 @@ def get_ping():
     return GetPingResponce(ping="pong")
 
 app.include_router(oauth.router, prefix="/oauth", tags=["oauth"])
+app.include_router(dish.router, prefix="/dish", tags=["dish"])
