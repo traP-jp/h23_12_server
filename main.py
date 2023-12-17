@@ -1,3 +1,7 @@
+import apis.oauth as oauth
+import apis.dish as dish
+from pydantic import BaseModel
+from logging import getLogger
 from fastapi import FastAPI, Depends
 import aiomysql
 from contextlib import asynccontextmanager
@@ -6,7 +10,9 @@ import os
 from typing import Generator
 from models import UserInput
 import gpt_executor
-import oauth
+from fastapi.middleware.cors import CORSMiddleware
+
+logger = getLogger("uvicorn.app")
 
 
 # 依存性注入用の関数
@@ -37,15 +43,24 @@ async def lifespan(app: FastAPI):
 app = FastAPI()
 app.router.lifespan_context = lifespan
 
+origins = [
+    "http://localhost:4321",
+]
 
-@app.get("/")
-def read_root():
-    return {"Hello": "world"}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+class GetPingResponce(BaseModel):
+    ping: str
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/ping", response_model=GetPingResponce, operation_id="get_ping")
+def get_ping():
+    return GetPingResponce(ping="pong")
 
 
 @app.get("/recipe/{recipe_id}")
@@ -73,3 +88,4 @@ async def process_text(input_data: UserInput, conn=Depends(get_db)):
 
 
 app.include_router(oauth.router, prefix="/oauth", tags=["oauth"])
+app.include_router(dish.router, prefix="/dish", tags=["dish"])

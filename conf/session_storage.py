@@ -1,27 +1,26 @@
-from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
 from fastapi_sessions.frontends.implementations import SessionCookie, CookieParameters
 from fastapi_sessions.backends.implementations import InMemoryBackend
+from fastapi_sessions.session_verifier import SessionVerifier
+from fastapi import HTTPException
 
-class SessionData(BaseModel):
-    verifier: str
-    accessToken: Optional[str] = None
+# cookieの設定
+cookie_params = CookieParameters(samesite="none")
 
-cookie_params = CookieParameters()
-
-backend = InMemoryBackend[UUID, SessionData]()
-# Uses UUID
 cookie = SessionCookie(
     cookie_name="session",
-    identifier="session_verifier",
-    auto_error=True,
+    identifier="general_verifier",
+    auto_error=False,
     secret_key="secret",
     cookie_params=cookie_params,
 )
 
-from fastapi_sessions.session_verifier import SessionVerifier
-from fastapi import HTTPException
+# セッション周り
+class SessionData(BaseModel):
+    access_token: str
+
+backend = InMemoryBackend[UUID, SessionData]()
 
 class BasicVerifier(SessionVerifier[UUID, SessionData]):
     def __init__(
@@ -59,8 +58,8 @@ class BasicVerifier(SessionVerifier[UUID, SessionData]):
 
 
 session_verifier = BasicVerifier(
-    identifier="session_verifier",
-    auto_error=True,
+    identifier="general_verifier",
+    auto_error=False,
     backend=backend,
     auth_http_exception=HTTPException(status_code=403, detail="invalid session"),
 )

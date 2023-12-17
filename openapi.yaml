@@ -1,0 +1,196 @@
+openapi: 3.1.0
+info:
+  title: FastAPI
+  version: 0.1.0
+paths:
+  /ping:
+    get:
+      summary: Get Ping
+      operationId: get_ping
+      parameters:
+        - name: iserror
+          in: query
+          required: false
+          schema:
+            type: integer
+            title: Iserror
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPingResponce'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /items/{item_id}:
+    get:
+      summary: Read Item
+      operationId: read_item_items__item_id__get
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Item Id
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            title: Q
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /oauth/redirect-uri:
+    get:
+      tags:
+        - oauth
+      summary: Get Oauth Redirect
+      description: |-
+        認証画面へリダイレクトするためのリダイレクト先のurlを返すAPI．
+        このAPIを叩くとセッションが作られる
+      operationId: get_oauth_redirect_uri
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOAuthRedirectResponse'
+  /oauth/callback:
+    get:
+      tags:
+        - oauth
+      summary: Get Oauth Callback
+      description: 認証画面を通過して得たcodeを用いてアクセストークンを得る
+      operationId: get_oauth_callback
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Code
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /oauth/me:
+    get:
+      tags:
+        - oauth
+      summary: Get Oauth Me
+      description: 認証が通らなかったら401が帰ってくる...はず
+      operationId: get_oauth_me
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMeResponseFromTraq'
+      security:
+        - SessionCookie: []
+components:
+  schemas:
+    GetMeResponseFromTraq:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        displayName:
+          type: string
+          title: Displayname
+        iconFileId:
+          type: string
+          title: Iconfileid
+        twitterId:
+          type: string
+          title: Twitterid
+      type: object
+      required:
+        - id
+        - name
+        - displayName
+        - iconFileId
+        - twitterId
+      title: GetMeResponseFromTraq
+      description: post_o_auth2_token のレスポンスの型
+    GetOAuthRedirectResponse:
+      properties:
+        redirect_uri:
+          type: string
+          title: Redirect Uri
+      type: object
+      required:
+        - redirect_uri
+      title: GetOAuthRedirectResponse
+    GetPingResponce:
+      properties:
+        ping:
+          type: string
+          title: Ping
+      type: object
+      required:
+        - ping
+      title: GetPingResponce
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
