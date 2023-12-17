@@ -1,13 +1,15 @@
-from openai import OpenAI, api_key
+from openai import AsyncOpenAI, api_key
 import re
 # import requests
 import json
 import httpx
 from fastapi import HTTPException
 import os
+import base64
+import urllib.parse
+
 
 api_key = os.environ["OPENAI_API_KEY"]
-
 
 # 関数の外に書きたかったのでf-stringにしませんでした
 PROMPT = """
@@ -78,8 +80,8 @@ async def query_gpt(client, prompt):
 
     try:
         # GPTモデルに問い合わせ
-        response = await client.chat.completions.acreate(
-            model='gpt-3.5-turbo-1106',  # gpt-4-1106-preview or gpt-3.5-turbo-1106でモデルを選択
+        response = await client.chat.completions.create(
+            model='gpt-4-1106-preview',  # gpt-4-1106-preview or gpt-3.5-turbo-1106でモデルを選択
             messages=[{"role": "user", "content": GPT_prompt}]
         )
         if not response:
@@ -139,29 +141,44 @@ async def query_dall_e(client, prompt):
         raise HTTPException(status_code=500, detail=f"DALL-E API error: {e}")
 
 
+# async def get_image_from_url(url):
+#     """
+#     Downloads an image from the specified URL and converts it to binary data.
+#
+#     Parameters
+#     ----------
+#     url : str
+#         The URL of the image to download.
+#
+#     Returns
+#     -------
+#     binary_image : bytes
+#         The binary data of the image.
+#     """
+#     try:
+#         async with httpx.AsyncClient() as client:
+#             response = await client.get(url)
+#             response.raise_for_status()
+#             binary_image = response.content
+#             base64_image = base64.b64encode(binary_image).decode()
+#             return base64_image
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Error downloading or encoding image: {e}")
+
 async def get_image_from_url(url):
-    """
-    Downloads an image from the specified URL and converts it to binary data.
-
-    Parameters
-    ----------
-    url : str
-        The URL of the image to download.
-
-    Returns
-    -------
-    binary_image : bytes
-        The binary data of the image.
-    """
     try:
+        # URLをデコードしてから再エンコード
+        decoded_url = urllib.parse.unquote(url)
+        encoded_url = urllib.parse.quote(decoded_url, safe=':/?=&')
+
         async with httpx.AsyncClient() as client:
-            response = await client.get(url)
+            response = await client.get(encoded_url)
             response.raise_for_status()
             binary_image = response.content
-            return binary_image
+            base64_image = base64.b64encode(binary_image).decode()
+            return base64_image
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error downloading image: {e}")
-
+        raise HTTPException(status_code=500, detail=f"Error downloading or encoding image: {e}")
 
 async def executor(name):
     """
@@ -176,13 +193,14 @@ async def executor(name):
     recipe_info: dict
         dict with cooking_name, comment, ingredient, seasoning, instruction, and image as keys
     """
-    client = OpenAI()
+    client = AsyncOpenAI()
 
     # GPTモデルを用いてレシピ情報と画像生成用プロンプトを取得
     recipe_info, image_prompt = await query_gpt(client, name)
 
     # DALL-Eモデルを用いて画像を生成
     image_url = await query_dall_e(client, image_prompt)
+    print(image_url)
 
     # 画像のURLからバイナリデータを取得
     recipe_info['image'] = await get_image_from_url(image_url)
