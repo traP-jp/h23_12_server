@@ -24,11 +24,11 @@ async def get_db() -> Generator:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db_handling.db_pool = await aiomysql.create_pool(
-        host=os.getenv("MYSQL_HOSTNAME", 'dockerDB'),
-        port=3306,
-        user=os.getenv("MYSQL_USER", "hackathon_23_winter_12"),
-        password=os.getenv("MYSQL_PASSWORD", 'password'),
-        db=os.getenv("MYSQL_DATABASE", "hackathon_23_winter_12")
+        user = os.getenv("NS_MARIADB_USER"),
+        password = os.getenv("NS_MARIADB_PASSWORD"),
+        host = os.getenv("NS_MARIADB_HOSTNAME"),
+        dbname = os.getenv("NS_MARIADB_DATABASE"),
+        port=3306
     )
 
     async with db_handling.db_pool.acquire() as conn:
