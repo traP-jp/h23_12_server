@@ -13,6 +13,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
+COPY ./default_recipes /app/default_recipes
 
 EXPOSE 8000
 
