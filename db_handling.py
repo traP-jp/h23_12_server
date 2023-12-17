@@ -24,8 +24,8 @@ async def initialize_db(conn):
 
         # デフォルトレシピの挿入 (例)
         default_recipes = [
-            ("Recipe 1", "Comment 1", "Ingredients 1", "Seasoning 1", "Instruction 1", None),
-            ("Recipe 2", "Comment 2", "Ingredients 2", "Seasoning 2", "Instruction 2", None),
+            ("Recipe 1", "Comment 1", "[Ingredients 1]", "Seasoning 1", "Instruction 1", None),
+            ("Recipe 2", "Comment 2", "[Ingredients 2]", "Seasoning 2", "Instruction 2", None),
             # 他のレシピを追加
         ]
 
@@ -47,6 +47,8 @@ async def get_recipe(conn, recipe_id: int):
     async with conn.cursor() as cursor:
         await cursor.execute(query, (recipe_id,))
         recipe = await cursor.fetchone()
+        print(recipe)
+        recipe = {'recipe_id': recipe[0], 'created_at': recipe[1], 'updated_at': recipe[2], 'name': recipe[3], 'comment': recipe[4], 'ingredient': recipe[5], 'seasoning': recipe[6], 'instruction': recipe[7], 'image': recipe[8]}
 
         if recipe:
             return recipe
@@ -83,6 +85,7 @@ async def get_all_recipes(conn):
         async with conn.cursor() as cursor:
             await cursor.execute(query)
             all_recipes = await cursor.fetchall()
+            all_recipes = [{'recipe_id': recipe_id, 'name': name, 'image': image} for recipe_id, name, image in all_recipes]
             return all_recipes
     except aiomysql.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
