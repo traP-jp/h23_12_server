@@ -13,7 +13,6 @@ dp_pool = None
 async def load_json_async(file_path):
     async with aiofiles.open(file_path, 'r', encoding='utf-8') as file:
         data = json.loads(await file.read())
-        # print('hoge', data["ingredient"])
         recipe_info = {
             "name": data["name"],
             "comment": data["comment"],
