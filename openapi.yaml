@@ -1,0 +1,367 @@
+openapi: 3.0.0
+info:
+  title: FastAPI
+  version: 0.1.0
+paths:
+  /ping:
+    get:
+      summary: Get Ping
+      operationId: get_ping
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPingResponce'
+  /recipe/{recipe_id}:
+    get:
+      tags:
+        - recipe
+      summary: Read Recipe
+      operationId: get_recipe
+      parameters:
+        - name: recipe_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Recipe Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRecipeResponce'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /add_recipe:
+    post:
+      tags:
+        - recipe
+      summary: Create Recipe
+      operationId: post_recipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: Recipe Info
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /recipes:
+    get:
+      tags:
+        - recipe
+      summary: Read All Recipes
+      operationId: get_recipes
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InnerGetRecipesResponce'
+  /process-text:
+    post:
+      tags:
+        - recipe
+      summary: Process Text
+      operationId: post_recipe_gen_text
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /oauth/redirect-uri:
+    get:
+      tags:
+        - oauth
+      summary: Get Oauth Redirect
+      description: |-
+        認証画面へリダイレクトするためのリダイレクト先のurlを返すAPI．
+        このAPIを叩くとセッションが作られる
+      operationId: get_oauth_redirect_uri
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOAuthRedirectResponse'
+  /oauth/callback:
+    get:
+      tags:
+        - oauth
+      summary: Get Oauth Callback
+      description: 認証画面を通過して得たcodeを用いてアクセストークンを得る
+      operationId: get_oauth_callback
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Code
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /oauth/me:
+    get:
+      tags:
+        - oauth
+      summary: Get Oauth Me
+      description: 認証が通らなかったら401が帰ってくる...はず
+      operationId: get_oauth_me
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMeResponseFromTraq'
+      security:
+        - SessionCookie: []
+  /dish/{id}:
+    get:
+      tags:
+        - dish
+      summary: Get Dish Image
+      operationId: get_dish
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    GetMeResponseFromTraq:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        displayName:
+          type: string
+          title: Displayname
+        iconFileId:
+          type: string
+          title: Iconfileid
+        twitterId:
+          type: string
+          title: Twitterid
+      type: object
+      required:
+        - id
+        - name
+        - displayName
+        - iconFileId
+        - twitterId
+      title: GetMeResponseFromTraq
+      description: post_o_auth2_token のレスポンスの型
+    GetOAuthRedirectResponse:
+      properties:
+        redirect_uri:
+          type: string
+          title: Redirect Uri
+      type: object
+      required:
+        - redirect_uri
+      title: GetOAuthRedirectResponse
+    GetPingResponce:
+      properties:
+        ping:
+          type: string
+          title: Ping
+      type: object
+      required:
+        - ping
+      title: GetPingResponce
+    GetRecipeResponce:
+      properties:
+        recipe_id:
+          type: integer
+          title: Recipe Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        name:
+          type: string
+          title: Name
+        comment:
+          type: string
+          title: Comment
+        ingredient:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: string
+          title: Ingredient
+        seasoning:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: string
+          title: Seasoning
+        instruction:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: string
+          title: Instruction
+        image:
+          anyOf:
+            - type: string
+              format: base64
+            - type: array
+          title: Image
+      type: object
+      required:
+        - recipe_id
+        - created_at
+        - updated_at
+        - name
+        - comment
+        - ingredient
+        - seasoning
+        - instruction
+        - image
+      title: GetRecipeResponce
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ImageResponse:
+      properties:
+        base64_bytes:
+          type: string
+          format: base64
+          title: Base64 Bytes
+      type: object
+      required:
+        - base64_bytes
+      title: ImageResponse
+    InnerGetRecipesResponce:
+      properties:
+        recipe_id:
+          type: integer
+          title: Recipe Id
+        name:
+          type: string
+          title: Name
+        image:
+          anyOf:
+            - type: string
+              format: base64
+            - type: array
+          title: Image
+      type: object
+      required:
+        - recipe_id
+        - name
+        - image
+      title: InnerGetRecipesResponce
+    UserInput:
+      properties:
+        text:
+          type: string
+          title: Text
+      type: object
+      required:
+        - text
+      title: UserInput
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: session

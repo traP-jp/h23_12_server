@@ -6,6 +6,7 @@ from fastapi import HTTPException
 import base64
 import aiofiles
 import aiofiles.os as aio_os
+from pprint import pprint
 
 dp_pool = None
 
@@ -63,6 +64,8 @@ async def initialize_db(conn):
         await conn.commit()
 
 
+     
+
 # async def get_recipe(conn, recipe_id: int):
 #     """
 #     Returns recipe information for a given recipe_id
@@ -88,6 +91,7 @@ async def initialize_db(conn):
 #             return recipe
 #         else:
 #             raise HTTPException(status_code=404, detail="No recipe found with the specified ID.")
+
 async def get_recipe(conn, recipe_id: int):
     """
     Returns recipe information for a given recipe_id
