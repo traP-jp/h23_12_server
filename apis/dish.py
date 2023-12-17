@@ -1,9 +1,15 @@
 from fastapi import APIRouter, Response
+from pydantic import BaseModel, Base64Bytes
+import base64
 
 router = APIRouter()
 
-@router.get("/{id}",responses = {200: {"content": {"image/png": {}}}}, response_class=Response, operation_id="get_dish")
+class ImageResponse(BaseModel):
+    base64_bytes: Base64Bytes
+
+@router.get("/{id}",responses = {200: {"model": ImageResponse}}, response_model=ImageResponse, operation_id="get_dish")
 def get_dish_image(id: int):
     with open("./notion-asm-icon.png", "rb") as img:
         b = img.read()
-    return Response(content=b, media_type="image/png")
+        byte_data = base64.b64encode(b)
+    return ImageResponse(base64_bytes=byte_data)
