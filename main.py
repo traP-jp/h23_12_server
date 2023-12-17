@@ -61,7 +61,7 @@ async def create_recipe(recipe_info: dict, conn=Depends(get_db)):
 
 @app.get("/recipes")
 async def read_all_recipes(conn=Depends(get_db)):
-    return await db_handling.get_all_recipes(conn) / 1
+    return await db_handling.get_all_recipes(conn)
 
 
 @app.post("/process-text")
