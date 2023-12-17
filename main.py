@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
         user = os.getenv("NS_MARIADB_USER"),
         password = os.getenv("NS_MARIADB_PASSWORD"),
         host = os.getenv("NS_MARIADB_HOSTNAME"),
-        dbname = os.getenv("NS_MARIADB_DATABASE"),
+        db = os.getenv("NS_MARIADB_DATABASE"),
         port=3306
     )
 
